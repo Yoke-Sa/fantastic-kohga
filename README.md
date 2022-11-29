@@ -27,7 +27,7 @@ module.exports = withVideos({
 	assetPrefix: isDevelopment ? 'http://localhost:3000' : 'http://localhost',
 });
 ```
-さらに、video.d.tsのように定義用のtsファイルを作り、下記を追加
+さらに、video.d.tsのような定義用のtsファイルを作り、下記を追加
 ```ts
 /***** video.d.ts *****/
 
@@ -37,7 +37,7 @@ declare module '*.mp4' {
 	export default src;
 }
 ```
-あとはcss当ててやれば表示されるはず、されなかったらおかしいです。
+あとはcss当ててやれば表示されるはず、されなかったらおかしい。
 
 ### 2. sass
 ・cssでmixinとかネストとか使いたかったから入れた。
