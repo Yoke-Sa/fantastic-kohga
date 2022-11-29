@@ -11,7 +11,7 @@ npm i next-videos
 ```js
 /***** next-config.js *****/
 
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~省略~~~~~~~~~~
 
 /**
  * next-videos
@@ -41,6 +41,6 @@ declare module '*.mp4' {
 
 2. sass
 ・cssでmixinとかネストとか使いたかったから入れた。
-```
+```linux
 npm i sass
 ```
