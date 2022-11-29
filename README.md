@@ -2,7 +2,7 @@
 
 ## 変更点(主にインポートしたライブラリについて)
 
-1. next-videos
+### 1. next-videos
 ・背景に動画を流すためにローカルファイルをリモートURLに提供する必要がある。
 ```linux
 npm i next-videos
@@ -39,7 +39,7 @@ declare module '*.mp4' {
 ```
 あとはcss当ててやれば表示されるはず、されなかったらおかしいです。
 
-2. sass
+### 2. sass
 ・cssでmixinとかネストとか使いたかったから入れた。
 ```linux
 npm i sass
