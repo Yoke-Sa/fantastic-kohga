@@ -1,8 +1,8 @@
-# fantastic-kohga(develop)にcssを加えたやつ
+fantastic-kohga(develop)にcssを加えたやつ
 
-## 変更点(主にインポートしたライブラリについて)
+# 変更点(主にインポートしたライブラリについて)
 
-### 1. next-videos
+## 1. next-videos
 ・背景に動画を流すためにローカルファイルをリモートURLに提供する必要がある。
 ```linux
 npm i next-videos
@@ -40,7 +40,7 @@ declare module '*.mp4' {
 あとはcss当ててやれば表示されるはず、されなかったらおかしい<br>
 (もしくはnext-imagesも入れると治る？ ← そんな必要ないとは思うけど)
 
-### 2. sass
+## 2. sass
 ・cssでmixinとかネストとか使いたかったから入れた。
 ```linux
 npm i sass
