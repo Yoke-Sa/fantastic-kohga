@@ -37,7 +37,7 @@ declare module '*.mp4' {
 	export default src;
 }
 ```
-あとはcss当ててやれば表示されるはず、されなかったらおかしい。
+あとはcss当ててやれば表示されるはず、されなかったらおかしい<br>
 (もしくはnext-imagesも入れると治る？ ← そんな必要ないとは思うけど)
 
 ### 2. sass
