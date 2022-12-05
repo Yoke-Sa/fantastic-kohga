@@ -3,11 +3,11 @@ fantastic-kohga(develop)にcssを加えたやつ
 # 変更点(主にインポートしたライブラリについて)
 
 ## 1. next-videos
-・背景に動画を流すためにローカルファイルをリモートURLに提供する必要がある。
+・背景に動画を流すためにローカルファイルをリモートURLに提供する必要があるため、next-videosを追加した。
 ```linux
 npm i next-videos
 ```
-その後、next-config.jsファイルに下記を追加
+インストール後、next-config.jsファイルに下記を追加
 ```js
 /***** next-config.js *****/
 
