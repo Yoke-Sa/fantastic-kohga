@@ -5,7 +5,7 @@ import React, { useState, SetStateAction, useContext, useEffect } from 'react';
 import _BaseButton from '../component/atoms/button/_BaseButton';
 import { circle, LatLng } from 'leaflet';
 import { CheckBoxForm } from '../component/atoms/checkbox/checkBoxForm';
-import { UserIdContext } from './_app';
+import { LoadingContext, UserIdContext } from './_app';
 import { useModal } from '../component/hooks/useModal';
 
 interface Props {
@@ -53,9 +53,20 @@ interface resRouting {
 	succeeded: boolean;
 	message?: string;
 }
+interface postRouteSave {
+	userId: string;
+	routeName: string;
+	data: LatLng[][];
+	junkai: boolean;
+}
+interface reqRouteSave {
+	succeeded: boolean;
+	routeName?: string;
+}
 const PostAstarUrl = 'http://saza.kohga.local:3001/astar';
 const PostOkRouteUrl = 'http://saza.kohga.local:3001/reqPassable';
 const PostRoutingUrl = 'http://saza.kohga.local:3001/execRoute';
+const PostRouteSaveUrl = 'http://saza.kohga.local:3001/saveRoute';
 
 export const DynamicMapNoSSR = dynamic(
 	() => {
@@ -73,25 +84,32 @@ const Desitination: NextPage = () => {
 	const [junkai, setJunkai] = useState<boolean>(false);
 	const [isAfterRouteSearch, setIsAfterRouteSearch] =
 		useState<boolean>(false);
-	const [isRouting, setIsRouting] = useState<boolean>(false);
 	const [middleFlag, setMiddleFlag] = useState<number>(-1);
+	const { isShow, setLoading } = useContext(LoadingContext);
 	const router = useRouter();
 	const PostUserId: Request = {
 		userId: userId,
 	};
 
+	// const [page, setPage] = useState(0);
+
+	// useEffect(() => {
+	// 	console.log('userId', userId);
+	// 	if (userId === '') {
+	// 		modal.setModalHander(() => router.push('/'));
+	// 		modal.setContent(
+	// 			<>
+	// 				<h1>チートは辞めてください</h1>
+	// 			</>
+	// 		);
+	// 		modal.open();
+	// 	}
+	// }, []);
+
 	useEffect(() => {
-		console.log('userId', userId);
-		if (userId === '') {
-			modal.setModalHander(() => router.push('/'));
-			modal.setContent(
-				<>
-					<h1>チートは辞めてください</h1>
-				</>
-			);
-			modal.open();
-		}
+		document.getElementById('beforePathOk')?.click();
 	}, []);
+
 	const allButtons = (disabled: boolean) => {
 		if (isAfterRouteSearch) {
 			(
@@ -134,10 +152,16 @@ const Desitination: NextPage = () => {
 	const onClickRouteSearch = async (
 		e: React.MouseEvent<HTMLButtonElement>
 	) => {
+		if (relayPoint.length === 0) {
+			modal.setContent(
+				<>
+					<p>少なくとも一つの目的地を選択してください</p>
+				</>
+			);
+			modal.open();
+			return;
+		}
 		allButtons(true);
-		if (relayPoint.length === 0) return;
-		const target = e ? e.currentTarget : null;
-		target && (target.disabled = true);
 
 		const internalRelayPoint = relayPoint.map((e) => e);
 		if (junkai) {
@@ -174,6 +198,7 @@ const Desitination: NextPage = () => {
 			promises.push(resPromise);
 		}
 		try {
+			setLoading(true);
 			const results = await Promise.all(promises);
 			const prepoly: LatLng[][] = [];
 			for (const elem of results) {
@@ -197,13 +222,68 @@ const Desitination: NextPage = () => {
 			console.log(e);
 		} finally {
 			allButtons(false);
-			target && (target.disabled = false);
+			setLoading(false);
 		}
 	};
 	const onClickBack = () => {
 		router.push('/CarMenu');
 	};
-	const onClickTutorial = () => {
+	const onClickTutorial = async () => {
+		// const modalText = [
+		// 	[
+		// 		'目的地を指定する',
+		// 		'&emsp;地図上でクリックし、ピンを立てることで車の目的地を指定することができます。その後、経路探索ボタンを押すことで経路探索が開始され、探索が終わると実際に移動する経路が表示されます。この時、巡回ルートをONにしてから探索すると巡回用の経路が表示されます。また、ピンはクリックすることで削除できます。<br />&emsp;※ピンが通行可能領域外にあると経路探索に失敗してしまうため、領域内に収まっていることを確認してから探索してください。',
+		// 	],
+		// ];
+		// const changePage = (arg: string) => {
+		// 	const change = Math.min(
+		// 		modalText.length,
+		// 		Math.max(
+		// 			0,
+		// 			page + (arg === 'send' ? 1 : arg === 'back' ? -1 : 0)
+		// 		)
+		// 	);
+
+		// 	setPage(change);
+		// 	return change;
+		// };
+
+		// const setTutorial = (num: number) => {
+		// 	return modal.setContent(
+		// 		<>
+		// 			<p>{modalText}</p>
+		// 			<button
+		// 				onClick={() => {
+		// 					setTutorial(changePage('back'));
+		// 				}}
+		// 				disabled={page <= 0 ? true : false}>
+		// 				戻る
+		// 			</button>
+		// 			<button
+		// 				onClick={() => {
+		// 					setTutorial(changePage('send'));
+		// 				}}
+		// 				disabled={page >= modalText[0].length ? true : false}>
+		// 				次へ
+		// 			</button>
+		// 		</>
+		// 	);
+		// };
+
+		// setTutorial(page);
+
+		modal.setContent(
+			<>
+				<p>
+					&emsp;地図上でクリックし、ピンを立てることで車の目的地を指定することができます。
+					その後、経路探索ボタンを押すことで経路探索が開始され、探索が終わると実際に移動する経路が表示されます。
+					この時、巡回ルートをONにしてから探索すると巡回用の経路が表示されます。
+					また、ピンはクリックすることで削除できます。
+					<br />
+					&emsp;※ピンが通行可能領域外にあると経路探索に失敗してしまうため、領域内に収まっていることを確認してから探索してください。
+				</p>
+			</>
+		);
 		modal.open();
 	};
 	const onClickRouteReset = () => {
@@ -215,6 +295,7 @@ const Desitination: NextPage = () => {
 		const passableinfo = [];
 		if (checked) {
 			try {
+				setLoading(true);
 				const res = await fetch(PostOkRouteUrl, {
 					method: 'POST',
 					headers: {
@@ -244,9 +325,117 @@ const Desitination: NextPage = () => {
 				console.log(e);
 			}
 		}
+		setLoading(false);
 		setViewCircle(passableinfo);
 	};
-	const RouteSave = () => {};
+
+	const AsyncModal = (
+		valueGenerator: (
+			r: (arg0: any) => void
+		) => React.SetStateAction<React.ReactNode>
+	) =>
+		new Promise<any>((r) => {
+			modal.setContent(valueGenerator(r));
+			modal.setModalHander(() => {
+				modal.close();
+				r(false);
+			});
+			modal.open();
+		});
+
+	const RouteSave = async () => {
+		const pathname = await (async () => {
+			while (1) {
+				const pathname = await AsyncModal((r) => (
+					<>
+						<p>経路名を入力してください</p>
+						<div>
+							<input
+								type="text"
+								id="pathname"
+								required
+							/>
+							<button
+								onClick={() => {
+									r(
+										(
+											document.getElementById(
+												'pathname'
+											) as HTMLInputElement
+										).value
+									);
+									modal.close();
+								}}>
+								OK
+							</button>
+						</div>
+					</>
+				));
+				if (pathname === false) return false;
+				if (pathname === '') continue;
+				const issave = await AsyncModal((r) => (
+					<>
+						<p>{pathname}</p>
+						<p>これで保存していいですか</p>
+						<button
+							onClick={() => {
+								modal.close();
+								r(true);
+							}}>
+							OK
+						</button>
+					</>
+				));
+				if (issave) return pathname;
+			}
+		})();
+		console.log('pathname', pathname);
+		if (pathname === false) return;
+		const PostRouteSave: postRouteSave = {
+			userId: userId,
+			routeName: pathname,
+			data: poly,
+			junkai: junkai,
+		};
+
+		try {
+			const res = await fetch(PostRouteSaveUrl, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(PostRouteSave),
+			});
+			const result = (await res.json()) as reqRouteSave;
+			if (result.succeeded) {
+				modal.setContent(
+					<>
+						<p>{result.routeName}</p>
+						<p>保存できました</p>
+					</>
+				);
+				modal.open();
+			} else {
+				modal.setContent(
+					<>
+						<p>
+							経路が保存できませんでした
+							<br />
+							経路を選び直しもう一度経路探索してください
+						</p>
+					</>
+				);
+				modal.open();
+			}
+		} catch {
+			modal.setContent(
+				<>
+					<p>通信エラー</p>
+				</>
+			);
+		}
+	};
+
 	const onClickBackPage = () => {
 		setPoly([]);
 		setRelayPoint(
@@ -259,9 +448,11 @@ const Desitination: NextPage = () => {
 		);
 		setIsAfterRouteSearch(false);
 	};
+
 	const onClickJunkai = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setJunkai(e.currentTarget.checked);
 	};
+
 	const routing = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		//ボタンが押されて経路情報が入っていたらPOST
 		const PostRoutingData: PostRouting = {
@@ -282,9 +473,14 @@ const Desitination: NextPage = () => {
 			});
 			const result = (await res.json()) as resRouting;
 			if (result.succeeded) {
-				setIsRouting(result.succeeded);
+				router.push('/CarWatch');
 			} else {
 				console.log('result.message', result.message);
+				modal.setContent(
+					<>
+						<p>失敗しました</p>
+					</>
+				);
 			}
 			console.log('result.succeeded', result.succeeded);
 		} catch (e) {
@@ -294,7 +490,6 @@ const Desitination: NextPage = () => {
 				</>
 			);
 		} finally {
-			if (isRouting) router.push('/CarWatch');
 			target.disabled = false;
 		}
 	};
@@ -321,40 +516,38 @@ const Desitination: NextPage = () => {
 		setMiddleFlag(-1);
 	};
 
+	// CSSテスト用
+	const changeBtn = () => {
+		setIsAfterRouteSearch(!isAfterRouteSearch);
+	};
 	const afterButtons = (
 		<>
 			{middleFlag === -1 ? null : (
 				<_BaseButton
 					onClick={onClickMiddlePoint}
-					_class="button"
+					_class="button  dest-btn"
 					id="middleButton">
 					中継点確定
 				</_BaseButton>
 			)}
 			<_BaseButton
 				onClick={RouteSave}
-				_class="button"
+				_class="button dest-btn"
 				id="saveButton">
-				保存
+				経路保存
 			</_BaseButton>
 			<_BaseButton
 				onClick={routing}
-				_class="button"
+				_class="button dest-btn"
 				id="routingButton">
-				この経路で車を動かす
-			</_BaseButton>
-			<_BaseButton
-				onClick={onClickBackPage}
-				_class="button"
-				id="backButton">
-				目的地選択に戻る
+				車を動かす
 			</_BaseButton>
 			<CheckBoxForm
 				name="junkai"
 				id="junkai"
 				onChange={onClickJunkai}
 				disabled={true}>
-				巡回ルート
+				<span>巡回ルート</span>
 			</CheckBoxForm>
 			<CheckBoxForm
 				name="pathOk"
@@ -362,23 +555,41 @@ const Desitination: NextPage = () => {
 				onChange={onChangePathOk}>
 				通行可能領域表示
 			</CheckBoxForm>
+			<_BaseButton
+				onClick={onClickBackPage}
+				_class="button back-btn"
+				id="backButton">
+				戻る
+			</_BaseButton>
 		</>
 	);
 	const beforeButtons = (
 		<>
 			<_BaseButton
-				onClick={onClickRouteSearch}
+				// onClick={onClickRouteSearch}
+				onClick={changeBtn}
 				_class="button dest-btn"
 				id="beforeRouteSearch">
 				経路探索
 			</_BaseButton>
 			<_BaseButton
+				onClick={onClickTutorial}
+				_class="button tutorial-btn"
+				id="beforeTutorial">
+				使い方
+			</_BaseButton>
+			<_BaseButton
 				onClick={onClickRouteReset}
 				_class="button dest-btn"
 				id="beforeReset">
-				目的地リセット
+				リセット
 			</_BaseButton>
-
+			<_BaseButton
+				onClick={onClickBack}
+				_class="button map-exit-btn"
+				id="beforeBack">
+				戻る
+			</_BaseButton>
 			<CheckBoxForm
 				name="beforejunkai"
 				id="beforejunkai"
@@ -386,25 +597,11 @@ const Desitination: NextPage = () => {
 				巡回ルート
 			</CheckBoxForm>
 			<CheckBoxForm
-				name="beforepathOk"
-				id="beforepathOk"
+				name="beforePathOk"
+				id="beforePathOk"
 				onChange={onChangePathOk}>
 				通行可能領域表示
 			</CheckBoxForm>
-
-			<_BaseButton
-				onClick={onClickTutorial}
-				_class="button tutorial-btn"
-				id="beforeTutorial">
-				使い方
-			</_BaseButton>
-
-			<_BaseButton
-				onClick={onClickBack}
-				_class="button map-exit-btn"
-				id="beforeBack">
-				戻る
-			</_BaseButton>
 		</>
 	);
 
@@ -412,11 +609,9 @@ const Desitination: NextPage = () => {
 		<>
 			<div className="dest-page">
 				{modal.show()}
-
 				<header>
 					{isAfterRouteSearch ? afterButtons : beforeButtons}
 				</header>
-
 				<div className="map">
 					<DynamicMapNoSSR
 						setRelayPoint={setRelayPoint}

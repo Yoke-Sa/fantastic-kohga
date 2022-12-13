@@ -19,6 +19,8 @@ interface ResMonitorCarData {
 	nowPoint?: LatLng;
 	battery?: number;
 	status?: boolean;
+	arrange?: boolean;
+	reserve?: boolean;
 }
 interface ReqProceedRouteData {
 	userId: string;
@@ -52,6 +54,11 @@ const CarWatch: NextPage = () => {
 	const [dest, setDest] = useState<LatLng[]>([]);
 	const [battery, setBattery] = useState<number>(0);
 	const [timerId, setTimerId] = useState<NodeJS.Timeout>();
+	const [arrival, setArrival] = useState<boolean>(false);
+	const [finish, setFinish] = useState<boolean>(false);
+	const [reserve, setReserve] = useState<boolean>(false);
+	const [arrange, setArrange] = useState<boolean>(false);
+	const [status, setStatus] = useState<boolean>(false);
 
 	const AsyncModal = (
 		valueGenerator: (
@@ -89,13 +96,26 @@ const CarWatch: NextPage = () => {
 				if (result.route !== undefined) setPoly(result.route);
 				if (result.dest !== undefined) setDest(result.dest);
 				if (result.battery !== undefined) setBattery(result.battery);
-				console.log('result route', result.route);
-				console.log('result dest', result.dest);
-				console.log('result battery', result.battery);
-				console.log('result arrival', result.arrival);
-				console.log('result finish', result.finish);
-				console.log('result');
+				if (result.finish !== undefined) setFinish(result.finish);
+				if (result.arrival !== undefined) setArrival(result.arrival);
+				if (result.arrange !== undefined) setArrange(result.arrange);
+				if (result.reserve !== undefined) setReserve(result.reserve);
+				console.log('result.status', result.status);
+
 				if (result.status) {
+					console.log('生きてる');
+				} else if (result.status === undefined) {
+					modal.setContent(
+						<>
+							<p>
+								車を確保できませんでした
+								<br />
+								もう一度車を確保します
+							</p>
+						</>
+					);
+					modal.open();
+				} else {
 					modal.setContent(
 						<>
 							<p>車が死にました</p>
@@ -111,12 +131,11 @@ const CarWatch: NextPage = () => {
 					</>
 				);
 				modal.open();
+				return;
 			}
-		} catch (e) {
-		} finally {
-			console.log('settimeout');
-			setTimerId(setTimeout(firstPost, 1000));
-		}
+		} catch (e) {}
+		console.log('settimeout');
+		setTimerId(setTimeout(firstPost, 10000));
 	};
 
 	const onClickNextRoute = async () => {
@@ -171,10 +190,9 @@ const CarWatch: NextPage = () => {
 				</>
 			);
 			modal.open();
-		} finally {
-			target.disabled = false;
-			firstPost();
 		}
+		target.disabled = false;
+		firstPost();
 	};
 	const syousai = async () => {
 		console.log('syousaitimerId', timerId);
@@ -223,7 +241,7 @@ const CarWatch: NextPage = () => {
 			});
 			const result = (await res.json()) as ResEndRoute;
 			if (result.succeeded) {
-				clearTimeout(timerId);
+				clearTimeout(timerId); //ここ動いてる？
 				router.push('/CarMenu');
 				return;
 			} else {
@@ -240,14 +258,37 @@ const CarWatch: NextPage = () => {
 					<p>通信エラー</p>
 				</>
 			);
-		} finally {
-			firstPost();
 		}
+		firstPost();
 	};
 
 	const onClickCarMenu = () => {
 		clearTimeout(timerId);
 		router.push('/CarMenu');
+	};
+
+	// バッテリー残量の可視化
+	const showBattery = (rem: number) => {
+		const charge = Math.max(0, Math.min(100, rem)); // 0~100%までの範囲に圧縮
+
+		if (process.browser) {
+			// 30%以下の時は赤色にする
+			charge > 30
+				? document.documentElement.style.setProperty(
+						'--battery-color',
+						'rgb(8, 175, 8)' // 通常は緑色
+				  )
+				: document.documentElement.style.setProperty(
+						'--battery-color',
+						'rgb(255, 68, 68)' // 赤色
+				  );
+
+			document.documentElement.style.setProperty(
+				'--charge',
+				String(100 - charge)
+			); // パーセンテージ表示
+		}
+		return charge;
 	};
 
 	return (
@@ -276,6 +317,10 @@ const CarWatch: NextPage = () => {
 						id="stopCarButton">
 						使用を停止
 					</_BaseButton>
+
+					<span className="battery">
+						<p>{`${showBattery(battery)}%`}</p>
+					</span>
 
 					<_BaseButton
 						onClick={onClickCarMenu}

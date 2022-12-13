@@ -1,8 +1,8 @@
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect } from 'react';
-
 import _BaseButton from '../component/atoms/button/_BaseButton';
+import { CheckBoxForm } from '../component/atoms/checkbox/checkBoxForm';
 import { useModal } from '../component/hooks/useModal';
 import { UserIdContext } from './_app';
 
@@ -34,8 +34,11 @@ const CarMenu: NextPage = () => {
 			modal.open();
 		}
 	}, []);
+
 	const autoEnd = async (e: BeforeUnloadEvent) => (e.returnValue = '');
-	useEffect(() => window.addEventListener('beforeunload', autoEnd), []);
+	useEffect(() => {
+		window.onbeforeunload = autoEnd;
+	}, []);
 
 	const onClickGenerator =
 		(url: string, postUrl: string) =>
@@ -82,7 +85,7 @@ const CarMenu: NextPage = () => {
 		router.push('/CarWatch');
 	};
 	const onClickEndPage = (e: React.MouseEvent<HTMLButtonElement>) => {
-		window.removeEventListener('beforeunload', autoEnd);
+		window.onbeforeunload = () => void 0;
 		const onClickEndPageInternal = onClickGenerator('/EndPage', EndPageUrl);
 		onClickEndPageInternal(e);
 	};
@@ -100,23 +103,6 @@ const CarMenu: NextPage = () => {
 			});
 			modal.open();
 		});
-
-	const test = async () => {
-		const result = await AsyncModal((r) => (
-			<>
-				<h1>hoge</h1>
-				<button
-					onClick={() => {
-						modal.close();
-						r(true);
-					}}>
-					OK
-				</button>
-			</>
-		));
-		console.log('after hoge', result);
-	};
-
 	// cssテスト用
 	const goDest = () => {
 		router.push('/Desitination');
@@ -130,11 +116,9 @@ const CarMenu: NextPage = () => {
 	const goEnd = () => {
 		router.push('/EndPage');
 	};
-
 	return (
 		<>
 			{modal.show()}
-
 			<header>
 				<h1>メニュー</h1>
 				<_BaseButton
@@ -146,8 +130,6 @@ const CarMenu: NextPage = () => {
 			</header>
 
 			<div className="car-menu">
-				{/* <span className="bg-img" /> */}
-
 				<section onClick={onClickDesitination}>
 					{/* <section onClick={goDest}> */}
 					<h2>新規ルート作成</h2>

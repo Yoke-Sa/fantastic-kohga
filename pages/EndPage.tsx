@@ -10,7 +10,8 @@ const EndPage: NextPage = () => {
 
 			<div className="end-page">
 				<h2>
-					　ご利用ありがとうございました。<br></br>
+					&emsp;ありがとうございました。
+					<br />
 					またのご利用をお待ちしております。
 				</h2>
 

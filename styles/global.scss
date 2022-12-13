@@ -1,3 +1,7 @@
+/* global.scss
+*		- アプリ全体に適用させるものをまとめたファイル
+*/
+
 @use 'mixin' as mix;
 
 :root {
@@ -81,10 +85,12 @@ section {
 		@include mix.img-option();
 		background-image: url('../assets/images/poster.png');
 	}
+
 	.img2 {
 		@include mix.img-option();
 		background-image: url('../assets/images/poster.png');
 	}
+
 	.img3 {
 		@include mix.img-option();
 		background-image: url('../assets/images/poster.png');
@@ -103,19 +109,16 @@ input[type='checkbox'] {
 }
 
 // チェックボックス用ラベル
-label {
-	--lbl-color: rgb(32, 102, 252);
-	--color: white;
-
+label:not(.text) {
 	position: relative;
 	display: inline-block;
 	margin: 20px;
 	padding: 5px 5px 5px 80px;
 
-	background-color: var(--lbl-color);
+	background-color: rgb(32, 102, 252);
 	border-radius: 5px;
 	box-shadow: 0 0 10px black;
-	color: var(--color);
+	color: white;
 	cursor: pointer;
 	font-size: 20px;
 	user-select: none;
@@ -164,6 +167,10 @@ label {
 		background-color: #29ce9a;
 		transform: translateX(40px);
 	}
+
+	input:disabled + & {
+		background-color: rgb(107, 107, 107);
+	}
 }
 
 @keyframes checked {
@@ -173,6 +180,7 @@ label {
 		height: 30px;
 		width: 30px;
 	}
+
 	50% {
 		top: 6px;
 		height: 18px;
@@ -187,6 +195,7 @@ label {
 		height: 30px;
 		width: 30px;
 	}
+
 	50% {
 		top: 6px;
 		height: 18px;
@@ -281,17 +290,57 @@ video {
 
 // 終了、戻るボタン
 .exit-btn {
+	position: fixed;
+	right: 35vw;
 	height: 4vh;
-	margin: 0 25px;
 	padding: 0 20px;
 	font-size: 1.3rem;
 }
 
 // 地図ページの戻るボタン
 .map-exit-btn {
-	position: absolute;
-	right: 10em;
+	--btn-color: rgb(180, 26, 26);
+
+	position: fixed;
+	right: 10vw;
 	height: 4vh;
 	padding: 1px 20px;
 	font-size: 1.3rem;
+
+	&:hover {
+		--btn-color: rgb(126, 19, 19);
+		--color: rgb(231, 231, 231);
+
+		transition: background-color 0.3s;
+	}
+}
+
+//マーカーの数字
+.numberMarker {
+	background: rgba(0, 0, 0, 0);
+}
+
+.modalContainer {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+
+	background-color: rgba(128, 128, 128, 0.5);
+	z-index: 9999;
+}
+
+.modalContainer .modalBody {
+	position: relative;
+	width: 50%;
+	max-height: 60%;
+	padding: 1rem;
+
+	background-color: white;
+	border-radius: 1rem;
+	filter: drop-shadow(0 0 0.75rem gray);
+}
+
+.modalContainer .modalBody .modalButtons {
+	text-align: right;
 }
