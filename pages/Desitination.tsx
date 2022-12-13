@@ -93,18 +93,18 @@ const Desitination: NextPage = () => {
 
 	// const [page, setPage] = useState(0);
 
-	// useEffect(() => {
-	// 	console.log('userId', userId);
-	// 	if (userId === '') {
-	// 		modal.setModalHander(() => router.push('/'));
-	// 		modal.setContent(
-	// 			<>
-	// 				<h1>チートは辞めてください</h1>
-	// 			</>
-	// 		);
-	// 		modal.open();
-	// 	}
-	// }, []);
+	useEffect(() => {
+		console.log('userId', userId);
+		if (userId === '') {
+			modal.setModalHander(() => router.push('/'));
+			modal.setContent(
+				<>
+					<h1>チートは辞めてください</h1>
+				</>
+			);
+			modal.open();
+		}
+	}, []);
 
 	useEffect(() => {
 		document.getElementById('beforePathOk')?.click();
@@ -566,8 +566,8 @@ const Desitination: NextPage = () => {
 	const beforeButtons = (
 		<>
 			<_BaseButton
-				// onClick={onClickRouteSearch}
-				onClick={changeBtn}
+				onClick={onClickRouteSearch}
+				// onClick={changeBtn}
 				_class="button dest-btn"
 				id="beforeRouteSearch">
 				経路探索
